@@ -1,0 +1,77 @@
+{% extends 'goods/base.html' %}
+{% load static %}
+{% load mathfilters %}
+
+<!--{% block title %}  {% endblock title %}-->
+
+{% block content %}
+<h1> Admin panel </h1>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  Добавить машину
+</button>
+
+
+
+
+<table class="table table-bordered">
+  <thead>
+  <tr>
+    <th scope="col">id</th>
+    <th scope="col">Title</th>
+    <th scope="col">Price</th>
+    <th scope="col">Delete</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for car in list_car %}
+  <tr>
+    <th scope="row">{{ car.id }}</th>
+    <td>{{ car.title }}</td>
+    <td>{{ car.price }}</td>
+    <td>@<a href=""> удалить </a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="add_form" method="get">
+            {{form}}
+          <!--{% for field in form.field %}
+          <div class="fieldWrapper"> {{ field }}</div>
+          {% endfor %}-->
+          <!--{% for n in form.field %}
+
+                    <div class="form-group">
+                        {% if n.errors %}
+                        <div class="alert alert-danger" role="alert">
+                             {{n.errors}}
+                         </div>
+                        {% endif %}
+                        {{n.label}}
+                        {{ n }}
+                    </div>
+            {% endfor %}-->
+
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        <button form="add_form" type="submit" class="btn btn-primary"> Добавить </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
