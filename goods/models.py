@@ -1,5 +1,6 @@
 from time import time
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
@@ -54,11 +55,12 @@ def gen_slug(s):
     return new_slug + '-' + str(int(time()))
 class Car(models.Model):
     """Фильм"""
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Владелец машины", blank=True, null=True)
     title = models.ForeignKey(CarName, verbose_name="Cars", on_delete=models.CASCADE)
     genres = models.ManyToManyField(Genre,  max_length=100)
     category = models.ManyToManyField(Category,  max_length=100)
     fuel = models.ManyToManyField(Specifications,  max_length=100)
-    poster = models.ImageField("Фото", default=None, upload_to="movies/")
+    poster = models.ImageField("Фото", null=True, default=None, upload_to="movies/")
     price = models.PositiveIntegerField("Цена", default=0, help_text="указывать сумму в долларах")
     slug = models.SlugField("Url", max_length=150, blank=True, unique=False)
 
@@ -130,15 +132,24 @@ class Reviews(models.Model):
     )
     car = models.ForeignKey(Car, verbose_name="Car", on_delete=models.CASCADE)
 
-
     def __str__(self):
         return f"{self.name} - {self.car}"
-
-
 
     class Meta:
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         ordering = ['-date_post']
 
-
+# class UserInRegistrated(models.Model):
+#     """ Пользователи """
+#     email = models.EmailField()
+#     name = models.CharField("Имя", max_length=100)
+#     password = models.IntegerField("Пароль")
+#
+#     def __str__(self):
+#         return f"{self.name} - {self.email}"
+#
+#     class Meta:
+#         verbose_name = "Пользователь"
+#         verbose_name_plural = "Пользователи"
+#         ordering = ['name']

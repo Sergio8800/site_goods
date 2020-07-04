@@ -47,6 +47,7 @@
 
 
 							{% for image in car.carshorts_set.all %}
+
 							<div class="product-preview">
 								<img src="{{ image.image.url }}" alt="">
 							</div>
@@ -59,10 +60,11 @@
 					<!-- Product thumb imgs -->
 					<div class="col-md-2  col-md-pull-5">
 						<div id="product-imgs">
+							{% if car.poster.url %}
 							<div class="product-preview">
 								<img src="{{car.poster.url}}" alt="">
 							</div>
-
+							{% endif %}
 							{% for image in car.carshorts_set.all %}
 							<div class="product-preview">
 								<img src="{{ image.image.url }}" alt="">

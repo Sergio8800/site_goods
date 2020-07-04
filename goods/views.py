@@ -1,13 +1,17 @@
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from django.views.generic.base import View
 from .models import *
 from .forms import *
-
 
 
 class GoodsList(View):
@@ -25,27 +29,151 @@ class GoodsList(View):
     #
     #     return context
 
-def addcar(request):
-    form = AddCar()
-    context = {
-        'list_car': Car.objects.all().order_by('id'),
-        'form': form
-    }
-
-    return render(request, 'goods/add_car.html', context=context)
-
-
-
-class AddCar(View):
+class AddCar_View(LoginRequiredMixin, View):
+    login_url = reverse_lazy('login_my')
 
     def get(self, request):
-
-        template = 'goods/add_car_new.html'
-        car = Car.objects.get(id=1)
+        template = 'goods/add_car.html'
         form = AddCar()
-        print(type(form))
-        print(dir(form))
-        return render(request, template, context= {'form': form, 'car':car})
+        contex = {
+            'list_car': Car.objects.all().order_by('id'),
+            'form': form
+        }
+
+        return render(request, template, context=contex)
+
+    def post(self, request):
+        success = False
+        form = AddCar(request.POST, request.FILES)
+        author = self.request.user
+
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.author = author
+            form.save()
+
+        # return redirect('/')
+        else:
+            print("hhhhhhhhhhhh")
+        return render(request, 'goods/add_car.html', context={
+            'list_car': Car.objects.all().order_by('id'),
+            'success': success}
+                      )
+
+
+########### метод инициализации формы через класс UpdateView #######
+# def get_form_kwargs(self):
+#     """Return the keyword arguments for instantiating the form."""
+#     kwargs = super().get_form_kwargs()
+#     print(kwargs)
+#     if hasattr(self, 'object'):
+#         kwargs.update({'instance': self.object})
+#     return kwargs
+
+############# переопределяем метод для записи Пользователя в БД ######
+# def form_valid(self, form):
+#     """If the form is valid, save the associated model."""
+#     self.object = form.save(commit=False)
+#     self.object.author = self.request.user
+#     self.object.save()
+#     return super().form_valid(form)
+# class LoginRequiredMixin(AccessMixin):
+#     """Verify that the current user is authenticated."""
+#     def dispatch(self, request, *args, **kwargs):
+#         if not request.user.is_authenticated:
+#             return self.handle_no_permission()
+#         return super().dispatch(request, *args, **kwargs)
+
+class Update_Car_View(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        template = 'goods/add_car.html'
+        form = AddCar(instance=Car.objects.get(pk=pk))
+        obj = Car.objects.get(pk=pk)
+        author = self.request.user
+        author_real = obj.author
+        print(author_real)
+
+        if author == author_real or request.user.is_superuser:
+
+            update = True
+            contex = {
+                'list_car': Car.objects.all().order_by('id'),
+                'form': form,
+                'update': update,
+                'author': author,
+                "author_real": author_real,
+            }
+
+            return render(request, template, context=contex)
+        else:
+            return redirect("/")
+
+    def post(self, request, pk):
+        template = 'goods/add_car.html'
+        get_car = Car.objects.get(pk=pk)
+
+        form = AddCar(request.POST, instance=get_car)  # для заполнения формы данными
+        author = self.request.user
+
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.author = author
+            form.save()
+
+        context = {
+            'get_car': get_car,
+            'update': True,
+            'form': AddCar(request.POST, instance=get_car)
+        }
+        # return reverse("add_car_new")
+        # return redirect('/add_car.html')
+        return render(request, template, context=context)
+
+
+def delete_car(request, pk):
+    get_car = Car.objects.get(pk=pk)
+    author = request.user
+    author_real = get_car.author
+    if author == author_real or request.user.is_superuser:
+        get_car.delete()
+        return redirect(reverse('add_car_new'))
+    else:
+        return redirect("/")
+
+
+###############    Registration      -------------------------------------------
+class MyLoginUserView(LoginView):
+    template_name = 'goods/login.html'
+    form_class = AuthForm
+    success_url = reverse_lazy('goods_list_url')
+
+    def get_success_url(self):
+        return self.success_url
+
+
+class MyRegisterUserView(CreateView):
+    # model = UserInRegistrated
+    model = User
+    template_name = 'goods/register_page.html'
+    form_class = RegisterForm
+    success_url = reverse_lazy('goods_list_url')
+
+    ### переопределение метода для автоматической авторизации через переменную authenticate #######
+    def form_valid(self, form):
+        form_valid = super().form_valid(form)
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user_auth = authenticate(username=username, password=password)
+        login(self.request, user_auth)
+        return form_valid
+
+
+class MyLogoutView(LogoutView):
+    next_page = reverse_lazy('goods_list_url')
+
+
+###############    Registration      -------------------------------------------
+
 
 class CarDetail(View):
     # def get_context_data(self, **kwargs):
@@ -87,13 +215,12 @@ class CarDetail(View):
         ############################## Paginanate #####################
         # return render(request, 'goods/product.html', {'car': car})
 
-        return render(request, 'goods/product.html', context= context)
+        return render(request, 'goods/product.html', context=context)
 
 
 class AddReview(View):
-    def post(self,request,pk):
+    def post(self, request, pk):
         form = ReviewForm(request.POST)
-
 
         car = Car.objects.get(id=pk)
         # print(review)
@@ -110,10 +237,10 @@ class AddReview(View):
             # return redirect('/')
         return redirect(car.get_absolute_url())
 
-class AddStars(View):
-    def post(self,request,pk):
-        form = RatingForm(request.POST)
 
+class AddStars(View):
+    def post(self, request, pk):
+        form = RatingForm(request.POST)
 
         car = Car.objects.get(id=pk)
         # print(review)
@@ -130,6 +257,7 @@ class AddStars(View):
         # return context
         #     # return redirect('/')
         # return redirect(car.get_absolute_url())
+
 
 class AddStarRating(View):
     """Добавление рейтинга фильму"""
@@ -153,8 +281,5 @@ class AddStarRating(View):
             return HttpResponse(status=201)
         else:
             return HttpResponse(status=400)
-
-
-
 
 # Create your views here.

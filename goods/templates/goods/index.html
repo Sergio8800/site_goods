@@ -61,7 +61,7 @@
 		<!-- SECTION -->
 
 {% block content %}
-<a href="{% url 'add_car' %}" class="cta-btn">Добавить Машину <i class="fa fa-arrow-circle-right"></i></a>
+
 <a href="{% url 'add_car_new' %}" class="cta-btn">Добавить Машину <i class="fa fa-arrow-circle-right"></i></a>
 		<div class="section">
 		<div class="section">
@@ -101,7 +101,7 @@
 										<div class="product" >
 											<h3> {{goods.title}} </h3>
 											<div class="product-img">
-												<img src="{{goods.poster.url}} "  alt="">
+												<img src="{% if goods.poster %} {{goods.poster.url}} {% endif %} "  alt="">
 
 												<div class="product-label">
 													<span class="sale">-30%</span>
