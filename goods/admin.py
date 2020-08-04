@@ -6,8 +6,8 @@ from .models import *
 
 @admin.register(Car)
 class AllCars(admin.ModelAdmin):
-    list_display = ('id', 'title', 'price', 'get_image')
-    # list_display = ('id', 'title', 'price')
+    # list_display = ('id', 'title', 'price', 'get_image')
+    list_display = ('id', 'title', 'price')
     list_display_links = ('title',)
     list_filter = ('title', 'price')
     search_fields = ('title__name',)

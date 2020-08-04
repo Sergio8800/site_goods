@@ -59,6 +59,15 @@ Table OF Contents
 	вставка
 \*----------------------------*/
 
+.image-car-short2 {
+    width: 150px;
+    height: 150px;
+}
+
+/*----------------------------*\
+	вставка
+\*----------------------------*/
+
 /* Checkbox stars */
 .rating {
     overflow: hidden;

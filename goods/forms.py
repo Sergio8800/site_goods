@@ -9,13 +9,20 @@ from .models import *
 class AddCar(forms.ModelForm):
     class Meta:
         model = Car
-        fields = ("author", "title", "genres", "category", "fuel", "price")
+        fields = ("author", "title", "genres", "category", "fuel", "price", "poster")
         widgets = {'author': forms.HiddenInput()}
         # def __init__(self, *args,**kwargs):
         #     super().__init__(*args,**kwargs)
         #     for field in self.fields:
         #         self.fields[field].widget.attrs['class'] = 'form-control'
-
+class AddCarImage(forms.ModelForm):
+    # name = forms.CharField(label=u'Локация')
+    # photos = forms.ImageField(label=u'Фотографии', widget=forms.FileInput(attrs={'multiple': 'multiple'}))
+    class Meta:
+        model = CarShorts
+        fields = ("car", "image")
+        widgets = {'image': forms.FileInput(attrs={'multiple': 'multiple'})}
+        widgets = {'car': forms.HiddenInput()}
 
 class ReviewForm(forms.ModelForm):
     """Форма отзывов"""

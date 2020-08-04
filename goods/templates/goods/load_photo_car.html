@@ -1,11 +1,31 @@
-
-<h1> _______API panel________ </h1>
-
-    {{ currency_privat}}
-{% for n in currency_privat. %}
-<div> n </div>
-
-{% endfor %}
+{% extends 'goods/base.html' %}
+{% block content %}
+<h1> _______Photo panel________ </h1>
 
 
+<form action="{{ post.photo_car_new }}" id="update_form" enctype="multipart/form-data" class="post-form" method="post" method="post">
 
+{% csrf_token %}
+    {{ form_im }}
+
+</form>
+<button form="update_form" type="submit" class="btn btn-primary"> Load </button>
+
+<h1>-----------------------------------------------</h1>
+ <div>
+          {% for n in car.carshorts_set.all %}
+                    <div>
+                      <img src="{{ n.image.url }}" class="image-car-short2" >
+                    </div>
+            {% endfor %}
+      </div><br>
+<div style="clear: left"></div>
+<style>
+  .image-car-short2 {
+    width: 270px;
+    height: 200px;
+    float:left; /* Выравнивание по левому краю */
+    margin: 7px 7px 7px 0;
+}
+  </style>
+{% endblock content %}

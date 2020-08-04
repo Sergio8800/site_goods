@@ -84,7 +84,7 @@ class Car(models.Model):
         verbose_name_plural = "Cars"
 
 class CarShorts(models.Model):
-    image = models.ImageField("Pictures", upload_to="movie_shots/")
+    image = models.ImageField("Pictures", null=True, default=None, upload_to="movie_shots/")
     car = models.ForeignKey(Car, verbose_name="Car", on_delete=models.CASCADE)
 
     def __str__(self):

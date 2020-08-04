@@ -7,6 +7,34 @@
 {% block content %}
 <h1> Admin panel </h1>
 
+<!--<a href="{% url 'load_photo_car' %}" class="btn btn-primary btn-sm active" role="button" aria-pressed="true"> ФОТО </a>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-sm">Добавить фото</button>-->
+
+<div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+
+      <form id="image_form" enctype="multipart/form-data" class="post-form" method="post">
+     {% csrf_token %}
+{% for n in form_im %}
+           <div class="form-group">
+                        {% if n.errors %}
+                        <div class="alert alert-danger" role="alert">
+                             {{n.errors}}
+                         </div>
+                        {% endif %}
+                        {{ n }}
+                        {{n.label}}
+
+                    </div>
+
+     {% endfor %}
+    </form>
+
+    </div>
+  </div>
+</div>
+
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
   Добавить машину
@@ -15,7 +43,7 @@
 <h3 class="text-primary"> Запись добавленна </h3>
 
         {% else %}
-        <h3> запись NOT добавленна</h3>
+        <h3> запись НЕ добавленна</h3>
 {% endif %}
 
 
@@ -23,12 +51,12 @@
 
 <a class="mt-24"> Page Update </a>
 
- <form id="update_form" method="post">
+ <form id="update_form" enctype="multipart/form-data" class="post-form" method="post">
 
           {% csrf_token %}
  {% for n in form %}
 
-                    <div class="form-group">
+                    <div class="form-group" style="float: left">
                         {% if n.errors %}
                         <div class="alert alert-danger" role="alert">
                              {{n.errors}}
@@ -39,9 +67,35 @@
 
                     </div>
             {% endfor %}
+     <div style="clear: left"></div>
+
         </form>
-  <button form="update_form" type="submit" class="btn btn-primary"> Update </button>
-    <div class="mt-4"> <a href="{% url 'add_car_new' %}"> List Cars </a> </div>
+<style>
+  .image-car-short2 {
+    width: 250px;
+    height: 200px;
+    float:left; /* Выравнивание по левому краю */
+    margin: 7px 7px 7px 0;
+}
+  </style>
+<h1>----------------POSTER-------------------------</h1>
+<div><img src="{% if car.poster %} {{car.poster.url}} {% endif %} " class="image-car-short2"></div>
+<div style="clear: left"></div>
+
+<h1>-----------------------------------------------</h1>
+ <div>
+          {% for n in car.carshorts_set.all %}
+                    <div>
+                      <img src="{{ n.image.url }}" class="image-car-short2" >
+                    </div>
+            {% endfor %}
+      </div><br>
+<div style="clear: left"></div>
+
+
+ <dir> <button form="update_form" type="submit" class="btn btn-primary btn-lg"> Update </button> </dir><br>
+    <a href="{% url 'add_car_new' %}" class="btn btn-primary btn-sm enabled" role="button" aria-disabled="true"> List Cars </a>
+
 {% else %}
 
 
@@ -53,6 +107,7 @@
     <th scope="col">Price</th>
     <th scope="col">Update</th>
     <th scope="col">Delete</th>
+      <th scope="col">Photo add</th>
   </tr>
   </thead>
   <tbody>
@@ -79,6 +134,7 @@
 <!--                    }-->
 <!--      </script>-->
       <td>@<a id="delete_car" onclick="delete_question()" href="{% if response_from_modal_window == true %} {% url 'delete_car_new' car.id %} {% endif %}"> удалить </a></td>
+
 <script>
     function delete_question() {
                 response_from_modal_window = confirm("Are you real?")
@@ -91,12 +147,11 @@
       {% endif %}
 
 
-
+    <td>@<a  href="{% url 'delete_car_new' car.id %}"> добавить фото </a></td>
   </tr>
   {% endfor %}
 </table>
 {% endif %}
-
 <div class="modal-body">
 
 <!-- Modal -->
@@ -110,7 +165,7 @@
         </button>
       </div>
 
-        <form id="add_form" method="post">
+        <form id="add_form" enctype="multipart/form-data" class="post-form" method="post">
 
           {% csrf_token %}
 
@@ -130,6 +185,8 @@
 
         </form>
       </div>
+
+  </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
         <button form="add_form" type="submit" class="btn btn-primary"> Добавить </button>

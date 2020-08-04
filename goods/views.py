@@ -1,9 +1,15 @@
+from datetime import datetime
+
+import rest_framework.views as APIView
+import requests
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.files.base import ContentFile
+
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -18,7 +24,7 @@ class GoodsList(View):
     def get(self, request):
         goods = Car.objects.all()
         category = Category.objects.all()
-        return render(request, 'goods/index.html', {'goods_list': goods, 'category': category})
+        return render(request, 'goods/index.html', {'goods_list': goods, 'category': category,})
     #### NEW Class ListView   ##########
     # model = Car
     # queryset = Car.objects.all()
@@ -33,11 +39,13 @@ class AddCar_View(LoginRequiredMixin, View):
     login_url = reverse_lazy('login_my')
 
     def get(self, request):
-        template = 'goods/add_car.html'
+        template = 'goods/add_car_for_list.html'
         form = AddCar()
+        # form_im = AddCarImage()
         contex = {
             'list_car': Car.objects.all().order_by('id'),
-            'form': form
+            'form': form,
+
         }
 
         return render(request, template, context=contex)
@@ -50,16 +58,116 @@ class AddCar_View(LoginRequiredMixin, View):
         if form.is_valid():
             form = form.save(commit=False)
             form.author = author
+            form.poster = request.FILES['poster']
             form.save()
+            success = True
 
-        # return redirect('/')
-        else:
-            print("hhhhhhhhhhhh")
-        return render(request, 'goods/add_car.html', context={
+        return render(request, 'goods/add_car_for_list.html', context={
             'list_car': Car.objects.all().order_by('id'),
             'success': success}
                       )
+# class Load_Photo(View):
+#     def get(self, request, pk):
+#         template = 'goods/add_car.html'
+#         form = AddCar(instance=Car.objects.get(pk=pk))
+#         obj = Car.objects.get(pk=pk)
+#         author = self.request.user
+#         author_real = obj.author
+#         print(obj)
+#
+#         if author == author_real or request.user.is_superuser:
+#
+#             update = True
+#             contex = {
+#                 'list_car': Car.objects.all().order_by('id'),
+#                 'form': form,
+#                 'update': update,
+#                 'author': author,
+#                 "author_real": author_real,
+#                 "car": obj
+#             }
+#
+#             return render(request, template, context=contex)
+#         else:
+#             return redirect("/")
+#
+#     def post(self, request, pk):
+#         template = 'goods/add_car.html'
+#         get_car = Car.objects.get(pk=pk)
+#
+#         form = AddCar(request.POST, instance=get_car)  # для заполнения формы данными
+#         author = self.request.user
+#
+#         if form.is_valid():
+#             form = form.save(commit=False)
+#             form.author = author
+#             form.poster = request.FILES['poster']
+#             # poster_url.save()
+#             # poster_url = form.poster.url
+#             form.save()
+#             # print("----------------hhhhhhhhhhhhh")
+#             # print(poster_url)
+#
+#         context = {
+#             'get_car': get_car,
+#             'update': True,
+#             'form': AddCar(request.POST, instance=get_car),
+#
+#         }
+#         # return reverse("add_car_new")
+#         # return redirect('/add_car.html')
+#         return render(request, template, context=context)
+def photo_carr(request, pk):
+    get_car = Car.objects.get(pk=pk)
 
+    # print(get_car)
+    car_input = get_car.title
+    author = request.user
+    author_real = get_car.author
+    if author == author_real or request.user.is_superuser:
+        if request.method == 'GET':
+            # data = {'car': 'car_input', 'image': ''}
+            form_im = AddCarImage(initial={'car': get_car})
+
+            # form_im.car = request.GET.get('car')
+            # if form_im.fields['car'] != None:
+            #     # print('Gooodddd')
+            # else:
+            #     print(form_im.fields['car'])
+            #     print(get_car.title)
+            return render(request, 'goods/load_photo_car.html', {'form_im': form_im, "car": get_car})
+        if request.method == 'POST':
+            form = AddCarImage(request.POST, request.FILES)
+            if form.is_valid():
+                form = form.save(commit=False)
+                if request.POST.get("image", None):
+                    form.image_id = int(request.POST.get("image"))
+
+                form.save()
+
+                # if request.POST.get("image", None):
+                #     form.image = request.FILES['image']
+                #     form.car = Car.objects.get(car=form.cleaned_data['car'])
+                #     # form.car = form.fields['car']
+                #
+                #     form.save()
+
+            # form_im.car = request.FILES['car']
+            return redirect(reverse('add_car_new'))
+            # return render(request, 'goods/load_photo_car.html', {'form_im': form})
+
+        else:
+            print("NOOOOOOOOOOO")
+    else:
+        return redirect("/")
+#
+# class MultipleUploadAPI(APIView):
+#     def post(self, request):
+#         for value, image in request.FILES.items():
+#             # do something with "image" it's a "InMemoryUploadFile" >>> for example
+#             with open(image.name, 'wb') as img_file:
+#                 img_file.write(image.read())
+#         return HttpResponse("Upload Successful")
 
 ########### метод инициализации формы через класс UpdateView #######
 # def get_form_kwargs(self):
@@ -86,12 +194,12 @@ class AddCar_View(LoginRequiredMixin, View):
 
 class Update_Car_View(LoginRequiredMixin, View):
     def get(self, request, pk):
-        template = 'goods/add_car.html'
+        template = 'goods/add_car_for_list.html'
         form = AddCar(instance=Car.objects.get(pk=pk))
         obj = Car.objects.get(pk=pk)
         author = self.request.user
         author_real = obj.author
-        print(author_real)
+        print(obj)
 
         if author == author_real or request.user.is_superuser:
 
@@ -102,6 +210,7 @@ class Update_Car_View(LoginRequiredMixin, View):
                 'update': update,
                 'author': author,
                 "author_real": author_real,
+                "car": obj
             }
 
             return render(request, template, context=contex)
@@ -109,25 +218,33 @@ class Update_Car_View(LoginRequiredMixin, View):
             return redirect("/")
 
     def post(self, request, pk):
-        template = 'goods/add_car.html'
+        template = 'goods/add_car_for_list.html'
         get_car = Car.objects.get(pk=pk)
 
         form = AddCar(request.POST, instance=get_car)  # для заполнения формы данными
         author = self.request.user
 
+
         if form.is_valid():
             form = form.save(commit=False)
             form.author = author
+            form.poster = request.FILES['poster']
+            # poster_url.save()
+            # poster_url = form.poster.url
             form.save()
+            # print("----------------hhhhhhhhhhhhh")
+            # print(poster_url)
 
         context = {
             'get_car': get_car,
             'update': True,
-            'form': AddCar(request.POST, instance=get_car)
+            'form': AddCar(request.POST, instance=get_car),
+
         }
         # return reverse("add_car_new")
         # return redirect('/add_car.html')
-        return render(request, template, context=context)
+        return redirect(reverse('add_car_new'))
+        # return render(request, template, context=context)
 
 
 def delete_car(request, pk):
@@ -139,6 +256,17 @@ def delete_car(request, pk):
         return redirect(reverse('add_car_new'))
     else:
         return redirect("/")
+
+############ API ###########
+def index_api(request):
+    # if request.user.is_authenticated:
+    #     return render(request, 'index.html', {})
+    # else:
+    #     return HttpResponsePermanentRedirect("/accounts/login/")
+    currency = requests.get(url="https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5")
+    currency_privat_bank = JsonResponse({"currency": currency.json(), "date": datetime.now()})
+
+    return render(request, 'goods/add_car_new.html', {"currency_privat": currency_privat_bank.content})
 
 
 ###############    Registration      -------------------------------------------

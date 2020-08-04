@@ -2,13 +2,10 @@
 {% load static %}
 {% load mathfilters %}
 
-<!--{% block title %}  {% endblock title %}-->
+
 
 {% block content %}
 <h1> Admin panel </h1>
-
-<!--<a href="{% url 'load_photo_car' %}" class="btn btn-primary btn-sm active" role="button" aria-pressed="true"> ФОТО </a>
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-sm">Добавить фото</button>-->
 
 <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-sm" role="document">
@@ -35,7 +32,7 @@
   </div>
 </div>
 
-<!-- Button trigger modal -->
+<!--Button trigger modal -->
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
   Добавить машину
 </button>
@@ -62,7 +59,7 @@
                              {{n.errors}}
                          </div>
                         {% endif %}
-                        {{ n }}
+                        {{ n }}<br>
                         {{n.label}}
 
                     </div>
@@ -122,17 +119,7 @@
       <td> нет доступа </td>
       {% endif %}
     {% if request.user == car.author or request.user.is_superuser  %}
-<!--      <td>@<form id="delete_car{{ car.id }}" action="{% url 'delete_car_new' car.id %}" method="post">{% csrf_token %} </form>-->
-<!--                <a href=" javascript:void()" onclick="delete_question{{car.id}}()"> удалить </a>-->
 
-<!--      </td>-->
-
-<!--      <script>-->
-<!--      function delete_question() {-->
-<!--                if (confirm("Are you real?")) {-->
-<!--                    document.getElementById("delete_car").submit()-->
-<!--                    }-->
-<!--      </script>-->
       <td>@<a id="delete_car" onclick="delete_question()" href="{% if response_from_modal_window == true %} {% url 'delete_car_new' car.id %} {% endif %}"> удалить </a></td>
 
 <script>
@@ -147,7 +134,7 @@
       {% endif %}
 
 
-    <td>@<a  href="{% url 'delete_car_new' car.id %}"> добавить фото </a></td>
+    <td>@<a  href="{% url 'photo_car_new' car.id %}"> добавить фото </a></td>
   </tr>
   {% endfor %}
 </table>
@@ -194,4 +181,5 @@
     </div>
   </div>
 </div>
+
 {% endblock content %}

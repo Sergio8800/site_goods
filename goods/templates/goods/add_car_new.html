@@ -1,10 +1,14 @@
+{% extends 'goods/base.html' %}
+{% load static %}
 
-<h1> _______Admin panel________ </h1>
+{% block content %}
 
+<h1> _______API panel________ </h1>
 
-    {% csrf_token%}
-    {{form}}
-    {{car}}
+    {{ currency_privat}}
+{% for n in currency_privat. %}
+<div> n </div>
+{% endfor %}
 
-
+{% endblock content %}
 
