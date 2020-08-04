@@ -1,0 +1,197 @@
+{% extends 'goods/base.html' %}
+{% load static %}
+{% load mathfilters %}
+
+<!--{% block title %}  {% endblock title %}-->
+
+{% block content %}
+<h1> Admin panel </h1>
+
+<!--<a href="{% url 'load_photo_car' %}" class="btn btn-primary btn-sm active" role="button" aria-pressed="true"> ФОТО </a>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-sm">Добавить фото</button>-->
+
+<div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+
+      <form id="image_form" enctype="multipart/form-data" class="post-form" method="post">
+     {% csrf_token %}
+{% for n in form_im %}
+           <div class="form-group">
+                        {% if n.errors %}
+                        <div class="alert alert-danger" role="alert">
+                             {{n.errors}}
+                         </div>
+                        {% endif %}
+                        {{ n }}
+                        {{n.label}}
+
+                    </div>
+
+     {% endfor %}
+    </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  Добавить машину
+</button>
+{% if success %}
+<h3 class="text-primary"> Запись добавленна </h3>
+
+        {% else %}
+        <h3> запись НЕ добавленна</h3>
+{% endif %}
+
+
+{% if update %}
+
+<a class="mt-24"> Page Update </a>
+
+ <form id="update_form" enctype="multipart/form-data" class="post-form" method="post">
+
+          {% csrf_token %}
+ {% for n in form %}
+
+                    <div class="form-group" style="float: left">
+                        {% if n.errors %}
+                        <div class="alert alert-danger" role="alert">
+                             {{n.errors}}
+                         </div>
+                        {% endif %}
+                        {{ n }}
+                        {{n.label}}
+
+                    </div>
+            {% endfor %}
+     <div style="clear: left"></div>
+
+        </form>
+<style>
+  .image-car-short2 {
+    width: 250px;
+    height: 200px;
+    float:left; /* Выравнивание по левому краю */
+    margin: 7px 7px 7px 0;
+}
+  </style>
+<h1>----------------POSTER-------------------------</h1>
+<div><img src="{% if car.poster %} {{car.poster.url}} {% endif %} " class="image-car-short2"></div>
+<div style="clear: left"></div>
+
+<h1>-----------------------------------------------</h1>
+ <div>
+          {% for n in car.carshorts_set.all %}
+                    <div>
+                      <img src="{{ n.image.url }}" class="image-car-short2" >
+                    </div>
+            {% endfor %}
+      </div><br>
+<div style="clear: left"></div>
+
+
+ <dir> <button form="update_form" type="submit" class="btn btn-primary btn-lg"> Update </button> </dir><br>
+    <a href="{% url 'add_car_new' %}" class="btn btn-primary btn-sm enabled" role="button" aria-disabled="true"> List Cars </a>
+
+{% else %}
+
+
+<table class="table table-bordered">
+  <thead>
+  <tr>
+    <th scope="col">id</th>
+    <th scope="col">Title</th>
+    <th scope="col">Price</th>
+    <th scope="col">Update</th>
+    <th scope="col">Delete</th>
+      <th scope="col">Photo add</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for car in list_car %}
+  <tr>
+    <th scope="row">{{ car.id }} - {{ car.author }}</th>
+    <td>{{ car.title }}</td>
+    <td>{{ car.price }}</td>
+      {% if request.user == car.author or request.user.is_superuser %}
+      <td>@<a href="{% url 'update_car_new' car.id %}"> редактировать </a></td>
+      {% else %}
+      <td> нет доступа </td>
+      {% endif %}
+    {% if request.user == car.author or request.user.is_superuser  %}
+<!--      <td>@<form id="delete_car{{ car.id }}" action="{% url 'delete_car_new' car.id %}" method="post">{% csrf_token %} </form>-->
+<!--                <a href=" javascript:void()" onclick="delete_question{{car.id}}()"> удалить </a>-->
+
+<!--      </td>-->
+
+<!--      <script>-->
+<!--      function delete_question() {-->
+<!--                if (confirm("Are you real?")) {-->
+<!--                    document.getElementById("delete_car").submit()-->
+<!--                    }-->
+<!--      </script>-->
+      <td>@<a id="delete_car" onclick="delete_question()" href="{% if response_from_modal_window == true %} {% url 'delete_car_new' car.id %} {% endif %}"> удалить </a></td>
+
+<script>
+    function delete_question() {
+                response_from_modal_window = confirm("Are you real?")
+
+                   }
+     </script>
+
+      {% else %}
+      <td> нет доступа </td>
+      {% endif %}
+
+
+    <td>@<a  href="{% url 'delete_car_new' car.id %}"> добавить фото </a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+<div class="modal-body">
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+        <form id="add_form" enctype="multipart/form-data" class="post-form" method="post">
+
+          {% csrf_token %}
+
+          {% for n in form %}
+
+                    <div class="form-group">
+                        {% if n.errors %}
+                        <div class="alert alert-danger" role="alert">
+                             {{n.errors}}
+                         </div>
+                        {% endif %}
+                        {{n.label}}
+                        {{ n }}
+                    </div>
+            {% endfor %}
+
+
+        </form>
+      </div>
+
+  </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        <button form="add_form" type="submit" class="btn btn-primary"> Добавить </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
